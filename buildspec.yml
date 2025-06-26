@@ -33,7 +33,7 @@ phases:
         fi
       - |
         aws ses send-email \
-          --from "devops@yourdomain.com" \
+          --from "jpandeer15@gmail.com" \
           --destination "jagritpandeer1969@gmail.com" \
           --message "Subject={Data=$SUBJECT},Body={Text={Data=$(cat tf_output.json || echo 'Check logs for failure')}}"
 artifacts:
