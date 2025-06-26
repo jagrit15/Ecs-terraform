@@ -22,17 +22,13 @@ phases:
           echo "failed" > status.txt
         fi
   post_build:
-    commands:
-      - echo "Running post-build steps"
-      - cat status.txt
-      - |
-        if [ "$(cat status.txt)" == "success" ]; then
-          SUBJECT="✅ Terraform Apply Successful"
-        else
-          SUBJECT="❌ Terraform Apply Failed"
-        fi
-      - |
-        aws ses send-email \
+  commands:
+    - echo "Post-build starting"
+    - ls -la
+    - cat tf_output.json || echo "Output file not found"
+    - echo "Sending email..."
+    - |
+      aws ses send-email \
           --from "jpandeer15@gmail.com" \
           --destination "jagritpandeer1969@gmail.com" \
           --message "Subject={Data=$SUBJECT},Body={Text={Data=$(cat tf_output.json || echo 'Check logs for failure')}}"
