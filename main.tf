@@ -59,7 +59,7 @@ resource "aws_ecs_service" "nginx_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets         = var.subnet_ids
+    subnets         = var.subnet_idss
     security_groups = var.security_group_ids
     assign_public_ip = true
   }
