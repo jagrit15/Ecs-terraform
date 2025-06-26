@@ -2,22 +2,41 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      python: 3.11
     commands:
+      - echo Installing Terraform
       - curl -o terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
-      - unzip terraform.zip && mv terraform /usr/local/bin/terraform
+      - unzip terraform.zip && mv terraform /usr/local/bin/
   pre_build:
     commands:
-      - terraform --version
       - terraform init
   build:
     commands:
       - terraform plan -out=tfplan
-      - terraform apply -auto-approve tfplan
+      - |
+        if terraform apply -auto-approve tfplan; then
+          echo "Apply successful"
+          terraform output -json > tf_output.json
+          echo "success" > status.txt
+        else
+          echo "Apply failed"
+          echo "failed" > status.txt
+        fi
   post_build:
     commands:
-      - terraform output -json > tf_output.json
+      - echo "Running post-build steps"
+      - cat status.txt
+      - |
+        if [ "$(cat status.txt)" == "success" ]; then
+          SUBJECT="✅ Terraform Apply Successful"
+        else
+          SUBJECT="❌ Terraform Apply Failed"
+        fi
+      - |
+        aws ses send-email \
+          --from "devops@yourdomain.com" \
+          --destination "jagritpandeer1969@gmail.com" \
+          --message "Subject={Data=$SUBJECT},Body={Text={Data=$(cat tf_output.json || echo 'Check logs for failure')}}"
 artifacts:
   files:
     - tf_output.json
+    - status.txt
